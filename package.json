@@ -4,7 +4,7 @@
     "start": "node index.js",
     "start:dev": "nodemon -w ./ -e \"js,html,jsx,css\"",
     "kill": "sudo kill -9 $(sudo lsof -t -i:3030)",
-    "push": "git add . && git commit -m \"`echo \"Auto commit by $(git config user.name) at $(date +%Y-%m-%dT%H:%M%z)\"`\"&& git push origin master"
+    "push": "git add . && git commit -m \"`echo \"Auto commit by $(git config user.name) at $(date +%Y-%m-%dT%H:%M%z)\"`\"&& git push"
   },
   "version": "1.0.0",
   "dependencies": {
