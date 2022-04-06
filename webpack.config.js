@@ -35,10 +35,10 @@ module.exports = {
         exclude: (m) => { return /node_modules/.test(m) },
         use: [{
           loader: 'url-loader',
-          options: { 
+          options: {
             limit: 8000,
             name: 'images/[hash]-[name].[ext]'
-          } 
+          }
         }]
       }
     ]
