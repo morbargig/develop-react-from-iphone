@@ -4,13 +4,13 @@ module.exports = {
   mode: 'development',
   entry: {
     app: [
-      './src/app.jsx'
+      './src/app.tsx'
     ]
   },
   module: {
     rules: [
       {
-        test: (m) => { return /\.(js|jsx)$/.test(m) },
+        test: (m) => { return /\.(ts|js|tsx|jsx)$/.test(m) },
         exclude: (m) => { return /node_modules/.test(m) },
         use: {
           loader: 'babel-loader',
