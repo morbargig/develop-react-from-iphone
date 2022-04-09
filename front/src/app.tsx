@@ -807,7 +807,6 @@ export default function App() {
           full-frame=""
           title="Mor Bargig">
         </embed>
-
       </div>
     }
   </div>
