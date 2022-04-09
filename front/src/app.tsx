@@ -14,7 +14,7 @@ class App extends React.Component {
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
           <p>
-            Edit <code>src/app.jsx</code> and tap.... on the play button.
+            Edit <code>src/app.tsx</code> and tap.... on the play button.
           </p>
           <a
             className="App-link"
