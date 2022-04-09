@@ -6,7 +6,7 @@
 # production
 /build
 /dist
-/server-dist
+server.bundle.js
 
 # misc
 .DS_Store
