@@ -2,11 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './app.css';
 import logo from '../public/logo.png';
-
-
-let t: { t?: string } = {}
-console.log(t)
-
 class App extends React.Component {
   render() {
     return (
