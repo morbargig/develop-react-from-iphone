@@ -3,6 +3,7 @@
   "scripts": {
     "build": "webpack",
     "start": "node server.bundle.js",
+    "start:dev": "nodemon -w ./ -e \"ts,js,html,tsx,jsx,css\" index.ts",
     "kill": "sudo kill -9 $(sudo lsof -t -i:3030)",
     "push": "git add . && git commit -m \"`echo \"Auto commit by $(git config user.name) at $(date +%Y-%m-%dT%H:%M%z)\"`\"&& git push",
     "herokuPush": "git add . && git commit -m \"`echo \"Auto commit by $(git config user.name) at $(date +%Y-%m-%dT%H:%M%z)\"`\" &&git push heroku main:master"
@@ -33,6 +34,7 @@
     "webpack-node-externals": "^3.0.0"
   },
   "devDependencies": {
+    "nodemon": "^2.0.15",
     "webpack-cli": "^4.9.2"
   }
 }
