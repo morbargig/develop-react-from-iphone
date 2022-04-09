@@ -19,7 +19,16 @@ module.exports = {
       {
         test: (m) => { return /\.ts$/.test(m) },
         exclude: (m) => { return /node_modules/.test(m) && /client/.test(m) },
-        use: ['ts-loader']
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: [
+              '@babel/preset-env',
+              "@babel/preset-typescript",
+              '@babel/preset-react'
+            ]
+          }
+        }
       },
       {
         test: (m) => { return /\.(png|jp(e*)g|svg)$/.test(m) },

@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack')
 const isDev = process.env.NODE_ENV === 'development'
 process.env['PORT']
 
@@ -8,6 +9,9 @@ module.exports = {
     app: [
       './front/src/app.tsx'
     ]
+  },
+  resolve: {
+    modules: ['.', 'node_modules'],
   },
   module: {
     rules: [
@@ -53,8 +57,10 @@ module.exports = {
     compress: true,
     port: 9000,
   },
+  plugins: [
+
+  ],
   devtool: isDev ? 'source-map' : false,
-  plugins: [],
   output: {
     filename: '[name].bundle.js',
     path: path.resolve(__dirname, '../dist'),
