@@ -1,4 +1,6 @@
 const path = require('path');
+const isDev = process.env.NODE_ENV === 'development'
+process.env['PORT']
 
 module.exports = {
   mode: 'development',
@@ -44,6 +46,14 @@ module.exports = {
       }
     ]
   },
+  devServer: {
+    static: {
+      directory: path.join(__dirname, '../dist'),
+    },
+    compress: true,
+    port: 9000,
+  },
+  devtool: isDev ? 'source-map' : false,
   plugins: [],
   output: {
     filename: '[name].bundle.js',

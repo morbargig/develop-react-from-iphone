@@ -5,7 +5,7 @@ import webpackMiddleware from 'webpack-dev-middleware';
 // Setup
 const app = express();
 const port = process.env['REACT_APP_PORT'] || process.env['PORT'] || 80;
-import config from './front/client.webpack.config';
+import config from './front/webpack.config';
 const compiler = webpack(<Configuration>config);
 const middleware = webpackMiddleware(compiler, {
   publicPath: config.output.publicPath,
