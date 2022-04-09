@@ -1,0 +1,3 @@
+[submodule "front/src/config/firebaseConfig"]
+	path = front/src/config/firebaseConfig
+	url = https://github.com/morbargig/firebase-config.git

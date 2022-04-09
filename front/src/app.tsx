@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import './app.css';
 import logo from './assets/logo.png';
 class App extends React.Component {
+  firebase
   render() {
     return (
       <div className="App">
