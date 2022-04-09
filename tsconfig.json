@@ -3,6 +3,7 @@
         "sourceMap": true,
         "module": "commonjs",
         "rootDir": "./",
+        "outDir": "./server-dist",
         "target": "es2017",
         "esModuleInterop": true,
         "allowJs": true,

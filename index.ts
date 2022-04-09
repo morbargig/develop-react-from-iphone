@@ -1,12 +1,12 @@
-const express =require('express')
-const webpack =require('webpack')
-const webpackMiddleware =require('webpack-dev-middleware')
+import express from 'express';
+import webpack, { Configuration } from 'webpack';
+import webpackMiddleware from 'webpack-dev-middleware';
 
 // Setup
 const app = express();
 const port = process.env['REACT_APP_PORT'] || process.env['PORT'] || 80;
-const config =require('./webpack.config.js')
-const compiler = webpack(config);
+import config from './webpack.config.js';
+const compiler = webpack(<Configuration>config);
 const middleware = webpackMiddleware(compiler, {
   publicPath: config.output.publicPath,
   serverSideRender: false,
@@ -31,4 +31,4 @@ app.listen(port, () => {
 // Register app and middleware. Required for better
 // performance when running from play.js
 // @ts-ignore
-try { (pjs).register(app, middleware); } catch (error) { }
+try { (pjs as any).register(app, middleware); } catch (error) { }

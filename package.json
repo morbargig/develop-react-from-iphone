@@ -1,8 +1,9 @@
 {
   "name": "react-ssr-cv",
   "scripts": {
-    "start": "nodemon index.ts",
-    "start:dev": "nodemon -w ./ -e \"ts,js,html,tsx,jsx,css\" index.ts",
+    "build": "npx tsc",
+    "start": "node server-dist/index.js",
+    "start:dev": "concurrently \"npx tsc --watch\" \"nodemon -q server-dist/index.js\"",
     "kill": "sudo kill -9 $(sudo lsof -t -i:3030)",
     "push": "git add . && git commit -m \"`echo \"Auto commit by $(git config user.name) at $(date +%Y-%m-%dT%H:%M%z)\"`\"&& git push",
     "herokuPush": "git add . && git commit -m \"`echo \"Auto commit by $(git config user.name) at $(date +%Y-%m-%dT%H:%M%z)\"`\" &&git push heroku main:master"
@@ -12,7 +13,7 @@
     "@babel/core": "7.x.x",
     "@babel/preset-env": "7.x.x",
     "@babel/preset-react": "7.x.x",
-"@types/express": "^4.17.13",
+    "@types/express": "^4.17.13",
     "@types/node": "^17.0.23",
     "@types/react": "^18.0.0",
     "@types/webpack": "^5.28.0",
@@ -25,7 +26,6 @@
     "react": "16.x.x",
     "react-dom": "16.x.x",
     "style-loader": "0.x.x",
-    "ts-node": "^10.7.0",
     "typescript": "^4.6.3",
     "url-loader": "^2.0.0",
     "webpack": "4.x.x",
