@@ -1,0 +1,15 @@
+{
+    "App.Header.CvTitle": "Mor Bargig CV",
+    "App.Header.Buttons.englishFile": "English",
+    "App.Header.Buttons.hebrewFile": "Hebrew",
+    "App.Header.Buttons.linkedinFile": "linkedinFile",
+    "App.Nav.Menu": "Menu",
+    "App.Nav.Items.PDF": "PDf",
+    "App.Nav.Items.MyWebSite": "My Web Site",
+    "App.Nav.Items.GitHub": "GitHub",
+    "App.Nav.Items.linkedinFile": "linkedinFile",
+    "App.Nav.Items.Contact": "Contact",
+    "App.Nav.Items.Email": "Email",
+    "App.Nav.Items.Portfolio": "Portfolio",
+    "App.Nav.Items.Admin": "Admin"
+}
