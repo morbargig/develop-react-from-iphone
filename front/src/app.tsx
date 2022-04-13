@@ -50,8 +50,7 @@ export class FirebaseApi {
     const keys = Object.keys(this.pdf?.data || {})
     if (Object.keys(this.pdf || {})?.length) {
       return keys as (keyof pdfModel['data'])[]
-    }
-    firebase.database()
+  }
     return []
   }
 
@@ -68,7 +67,8 @@ export class FirebaseApi {
       }
     } as pdfModel))
 
-  updatePdfState = (pdf: pdfModel) => {
+updatePdfState = (pdf: pdfModel) => {
+console.log("pdf",pdf)
     const handleChanges = (pdf: pdfModel) => {
       this.pdf = pdf;
       this.pdfChanged.next(pdf);
@@ -91,15 +91,17 @@ export class FirebaseApi {
 
   uploadPdf = (uploadedImage: (Blob | Uint8Array | ArrayBuffer), fileName: string, fileTypeName: keyof pdfModel['data'] = this.pdf?.language): Observable<string> => {
     const storageRef = this.firebase.storage().ref();
-    const fileRef = storageRef
+  const fileRef = storageRef
       .child(`/CV/${this.username}/${fileName}`);
     return from(fileRef.put(uploadedImage))?.pipe(switchMap(uploadTaskSnapshot => from(uploadTaskSnapshot.ref.getDownloadURL())))?.pipe(
+    tap(x=>{debugger ;console.log("pdf uploade func",this.pdf)}),
       tap(url => this.updatePdf(
-        {
-          ...this.pdf,
+      {
+          // ...this.pdf,
           data: { ...this.pdf?.data, [fileTypeName]: url },
           language: fileTypeName
         }).toPromise()),
+        
     )
   }
 
@@ -116,7 +118,9 @@ export class FirebaseApi {
       this.deleteFile(pdfSnapshot?.data?.[deletePdfKey] || '')
       delete pdfSnapshot?.data?.[deletePdfKey]
       pdfSnapshot.language = Object?.keys(pdfSnapshot?.data || {})?.[0] as keyof pdfModel['data']
-      return from(this.firebase.database().ref(`CV/${this.username}`).set(pdfSnapshot as pdfModel))?.pipe(tap(() => this.pdf = pdfSnapshot))
+      return from(this.firebase.database().ref(`CV/${this.username}`).set(pdfSnapshot as pdfModel))?.pipe(
+        // tap(() => this.pdf = pdfSnapshot)
+        )
     }
   }
 }
@@ -144,18 +148,17 @@ export default function App() {
   // }
 
   useEffect(() => {
-    firebaseApi.updatePdfState(null)
     const s = forkJoin([
-      firebaseApi.pdfChanged?.pipe(tap(pdf => {
+  firebaseApi.pdfChanged?.pipe(tap(pdf => {
         setCvName(pdf?.language?.toString())
         const fileUri = pdf?.data?.[pdf?.language]?.split('&token')?.[0];
+        console.log("change pdf app",pdf)
         !!fileUri && setFileUri(oldVal => fileUri || oldVal);
       })),
       firebaseApi.getPdf()?.pipe(take(1)),
     ]).subscribe()
     return () => s?.unsubscribe()
   }, [])
-
   const [isOpen, setIsOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const onValueChange = (getValFunc: () => actionEnum) => {
@@ -180,7 +183,7 @@ export default function App() {
       //       const s = firebaseApi.uploadPdf(file, uploadedFileName, fileName as any)?.pipe(take(1))?.subscribe(() => s?.unsubscribe())
       //     })
       //   } catch (error) {
-      //     console.log('ERR: ' + error);
+  //     console.log('ERR: ' + error);
       //   }
       // })
       default:
