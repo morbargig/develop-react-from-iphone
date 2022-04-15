@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import firebase from 'firebase';
 import './app.css';
 import { BehaviorSubject, from, map, Observable, switchMap, tap, take, catchError, EMPTY, skip } from 'rxjs';
-import firebaseConfig from './config/firebaseConfig/firebaseConfig.json';
 import i18next from 'i18next';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import en from "./translations/en.json";
@@ -40,10 +39,25 @@ export class FirebaseApi {
   public authStateChanged: BehaviorSubject<firebase.User> = new BehaviorSubject<firebase.User>(null)
 
   constructor() {
-    !firebase.apps.length &&
-      (this._firebase = firebase.initializeApp(firebaseConfig));
-    this.initAuth()
-    this.onAuthStateChanged((u) => (this.user = u) || this.authStateChanged?.next(u))
+    let firebaseConfig: any = {}
+    try {
+      firebaseConfig = require('./config/firebaseConfig/firebaseConfig.json')
+    } catch (e) { }
+    finally {
+      !firebase.apps.length &&
+        (this._firebase = firebase.initializeApp({
+          apiKey: process.env.API_KEY || firebaseConfig.apiKey,
+          authDomain: process.env.AUTH_DOMAIN || firebaseConfig.authDomain,
+          databaseURL: process.env.DATABASE_URL || firebaseConfig.databaseURL,
+          projectId: process.env.PROJECT_ID || firebaseConfig.projectId,
+          storageBucket: process.env.STORAGE_BUCKET || firebaseConfig.storageBucket,
+          messagingSenderId: process.env.MESSAGING_SENDER_ID || firebaseConfig.messagingSenderId,
+          appId: process.env.APP_ID || firebaseConfig.appId
+        }));
+      this.initAuth()
+      this.onAuthStateChanged((u) => (this.user = u) || this.authStateChanged?.next(u))
+    }
+
   }
 
   public get keys(): (keyof pdfModel['data'])[] {
