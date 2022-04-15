@@ -57,7 +57,6 @@ export class FirebaseApi {
       this.initAuth()
       this.onAuthStateChanged((u) => (this.user = u) || this.authStateChanged?.next(u))
     }
-
   }
 
   public get keys(): (keyof pdfModel['data'])[] {
