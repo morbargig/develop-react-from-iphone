@@ -267,7 +267,6 @@ const styles: { [k: string]: React.CSSProperties } = {
   },
 };
 
-
 i18next.init({
   interpolation: { escapeValue: false },  // React already does escaping
   lng: 'en',                              // language to use
