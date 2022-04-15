@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import firebase from 'firebase';
 import './app.css';
-import { BehaviorSubject, from, map, Observable, switchMap, tap, take, of, catchError, EMPTY, forkJoin } from 'rxjs';
+import { BehaviorSubject, from, map, Observable, switchMap, tap, take, catchError, EMPTY, skip } from 'rxjs';
 import firebaseConfig from './config/firebaseConfig/firebaseConfig.json';
 import i18next from 'i18next';
 import { I18nextProvider, useTranslation } from 'react-i18next';
@@ -25,7 +25,7 @@ export class FirebaseApi {
 
   initAuth = () => this.auth = this.firebase.auth()
 
-  logout = (): Observable<void> => !!this.user ? from(this.auth.signOut())?.pipe(() => (this.user = null)) : of()
+  logout = (): Observable<void> => !!this.user ? from(this.auth.signOut())?.pipe(() => (this.user = null)) : EMPTY
 
   signIn = () => from(this.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()))?.pipe(
     catchError(err => { console.error(err); return EMPTY }),
@@ -50,7 +50,7 @@ export class FirebaseApi {
     const keys = Object.keys(this.pdf?.data || {})
     if (Object.keys(this.pdf || {})?.length) {
       return keys as (keyof pdfModel['data'])[]
-  }
+    }
     return []
   }
 
@@ -62,13 +62,13 @@ export class FirebaseApi {
     from(this.firebase.database().ref(`CV/${this.username}/`).set({
       language: 'englishFile', data: {
         englishFile: '',
-        englishFile: '',
+        hebrewFile: '',
         linkedinFileFile: '',
       }
     } as pdfModel))
 
-updatePdfState = (pdf: pdfModel) => {
-console.log("pdf",pdf)
+  updatePdfState = (pdf: pdfModel) => {
+    console.log(pdf, 'pdf')
     const handleChanges = (pdf: pdfModel) => {
       this.pdf = pdf;
       this.pdfChanged.next(pdf);
@@ -81,7 +81,6 @@ console.log("pdf",pdf)
     } else {
       handleChanges(pdf)
     }
-
   }
 
   login = () => this.firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())
@@ -91,24 +90,26 @@ console.log("pdf",pdf)
 
   uploadPdf = (uploadedImage: (Blob | Uint8Array | ArrayBuffer), fileName: string, fileTypeName: keyof pdfModel['data'] = this.pdf?.language): Observable<string> => {
     const storageRef = this.firebase.storage().ref();
-  const fileRef = storageRef
+    const fileRef = storageRef
       .child(`/CV/${this.username}/${fileName}`);
     return from(fileRef.put(uploadedImage))?.pipe(switchMap(uploadTaskSnapshot => from(uploadTaskSnapshot.ref.getDownloadURL())))?.pipe(
-    tap(x=>{debugger ;console.log("pdf uploade func",this.pdf)}),
       tap(url => this.updatePdf(
-      {
-          // ...this.pdf,
+        {
+          ...this.pdf,
           data: { ...this.pdf?.data, [fileTypeName]: url },
           language: fileTypeName
         }).toPromise()),
-        
     )
   }
 
-  updatePdf = (upData: pdfModel): any =>
-    from(this.firebase.database().ref(`CV/${this.username}/`).once('value')).pipe(switchMap(snap =>
-      from(this.firebase.database().ref(`CV/${this.username}`).set({ ...snap.val(), ...upData } as pdfModel))?.pipe(tap(() => this.updatePdfState({ ...snap.val(), ...upData })))
-    ))
+  updatePdf = (upData: Omit<pdfModel, 'data'> & Partial<Pick<pdfModel, 'data'>>): Observable<any> => {
+    return from(this.firebase.database().ref(`CV/${this.username}/`).once('value')).pipe(
+      switchMap(snap =>
+        from(this.firebase.database().ref(`CV/${this.username}`).set({ ...snap.val(), ...upData, data: { ...snap.val()?.data, ...upData?.data } } as pdfModel))?.pipe(
+          tap(() => this.updatePdfState({ ...snap.val(), ...upData, data: { ...snap.val()?.data, ...upData?.data } } as pdfModel))
+        ))
+    )
+  }
 
   deleteFile = (url: string) => from(this.firebase.storage().refFromURL(url)?.delete())
 
@@ -119,16 +120,16 @@ console.log("pdf",pdf)
       delete pdfSnapshot?.data?.[deletePdfKey]
       pdfSnapshot.language = Object?.keys(pdfSnapshot?.data || {})?.[0] as keyof pdfModel['data']
       return from(this.firebase.database().ref(`CV/${this.username}`).set(pdfSnapshot as pdfModel))?.pipe(
-        // tap(() => this.pdf = pdfSnapshot)
-        )
+        tap(() => this.pdf = pdfSnapshot)
+      )
     }
   }
 }
 
-enum actionEnum {
-  Delete,
-  Edit
-}
+// enum actionEnum {
+//   Delete,
+//   Edit
+// }
 
 export default function App() {
   const isMobile = (function (a) {
@@ -139,57 +140,38 @@ export default function App() {
   const [fileUri, setFileUri] = useState(defaultFile)
   const [cvName, setCvName] = useState('')
   const [t, i18n] = useTranslation('common');
-  // const [subscribes, setSubscribes] = React.useState([] as Subscription[])
-  // const [ended, setEnded] = React.useState(false)
-  // // stops all subscribes (by ended property) and unsubscribe them
-  // const destroy = () => {
-  //   setEnded(true)
-  //   subscribes?.forEach(x => x?.unsubscribe())
-  // }
-
+  const setCvNameState = (v: string) => {
+    firebaseApi.updatePdf({ language: v })?.toPromise();
+    i18n.changeLanguage(v === 'hebrewFile' ? 'he' : 'en');
+    setCvName(v)
+  }
   useEffect(() => {
-    const s = forkJoin([
-  firebaseApi.pdfChanged?.pipe(tap(pdf => {
-        setCvName(pdf?.language?.toString())
+    firebaseApi.pdfChanged?.pipe(
+      skip(1),
+      take(1),
+      tap((pdf) => {
         const fileUri = pdf?.data?.[pdf?.language]?.split('&token')?.[0];
-        console.log("change pdf app",pdf)
-        !!fileUri && setFileUri(oldVal => fileUri || oldVal);
-      })),
-      firebaseApi.getPdf()?.pipe(take(1)),
-    ]).subscribe()
-    return () => s?.unsubscribe()
+        setFileUri(fileUri || defaultFile);
+      })
+    ).subscribe()
+  }, [firebaseApi.pdfChanged])
+  useEffect(() => {
+    firebaseApi.getPdf()?.pipe(take(1)).toPromise().then(x => setCvName(x.language?.toString()))
   }, [])
   const [isOpen, setIsOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
-  const onValueChange = (getValFunc: () => actionEnum) => {
-    const actionType = getValFunc()
-    switch (actionType) {
-      case actionEnum.Delete:
-        firebaseApi?.deletePdf(cvName)
-        break;
-      case actionEnum.Edit:
-      // of()?.toPromise()?.then(file => {
-      //   const { type } = file
-      //   if (type === 'cancel') {
-      //     return;
-      //   }
-      //   const { uri, name } = file
-      //   try {
-      //     axios.get(uri, { responseType: 'arraybuffer' })?.then((fetchResponse) => {
-      //       // console.log('fetchResponse', fetchResponse);
-      //       const uint8Array = new Uint8Array(fetchResponse?.data)
-      //       const file = uint8Array
-      //       const uploadedFileName = name || uri.substring(uri.lastIndexOf('/') + 1)
-      //       const s = firebaseApi.uploadPdf(file, uploadedFileName, fileName as any)?.pipe(take(1))?.subscribe(() => s?.unsubscribe())
-      //     })
-      //   } catch (error) {
-  //     console.log('ERR: ' + error);
-      //   }
-      // })
-      default:
-        break;
-    }
-  }
+  // const onValueChange = (getValFunc: () => actionEnum) => {
+  //   const actionType = getValFunc()
+  //   switch (actionType) {
+  //     case actionEnum.Delete:
+  //       firebaseApi?.deletePdf(cvName)
+  //       break;
+  //     case actionEnum.Edit:
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // }
   const handleImage = (e) => {
     const file = e.target.files[0]
     if (!file) {
@@ -212,13 +194,6 @@ export default function App() {
       alert("Hi your not my Admin, watch out!! ")
     }
   }
-
-  //   englishFile: 
-  // ""
-  // englishFile: 
-  // ""
-  // linkedinFileFile: 
-
   return (<div>
     {isEditMode ? <div>
       <input type="file" onChange={handleImage} />
@@ -229,7 +204,7 @@ export default function App() {
       flexDirection: i18n?.language === 'he' ? 'row-reverse' : 'row'
     }} >
       {
-        ['englishFile', 'hebrewFile', 'linkedinFile'].map(name => <button key={name} disabled={name === cvName} name={name} onClick={() => i18n.changeLanguage(name === 'hebrewFile' ? 'he' : 'en') && setCvName(name)}  > {t(`App.Header.Buttons.${name}`)} </button>)
+        ['englishFile', 'hebrewFile', 'linkedinFile'].map(name => <button key={name} disabled={name === cvName} name={name} onClick={() => setCvNameState(name)}  > {t(`App.Header.Buttons.${name}`)} </button>)
       }
     </div>
 
@@ -290,23 +265,6 @@ const styles: { [k: string]: React.CSSProperties } = {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  header: {
-    zIndex: 10,
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    margin: 20,
-    justifyContent: 'space-around'
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginTop: 100,
-    height: 1,
-    width: '80%',
-  },
 };
 
 i18next.init({
@@ -314,7 +272,7 @@ i18next.init({
   lng: 'en',                              // language to use
   resources: {
     en: {
-      common: en               // 'common' is our custom namespace
+      common: en                           // 'common' is our custom namespace
     },
     he: {
       common: he
