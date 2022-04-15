@@ -82,7 +82,6 @@ export class FirebaseApi {
     } as pdfModel))
 
   updatePdfState = (pdf: pdfModel) => {
-    console.log(pdf, 'pdf')
     const handleChanges = (pdf: pdfModel) => {
       this.pdf = pdf;
       this.pdfChanged.next(pdf);
@@ -174,18 +173,6 @@ export default function App() {
   }, [])
   const [isOpen, setIsOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
-  // const onValueChange = (getValFunc: () => actionEnum) => {
-  //   const actionType = getValFunc()
-  //   switch (actionType) {
-  //     case actionEnum.Delete:
-  //       firebaseApi?.deletePdf(cvName)
-  //       break;
-  //     case actionEnum.Edit:
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  // }
   const handleImage = (e) => {
     const file = e.target.files[0]
     if (!file) {
